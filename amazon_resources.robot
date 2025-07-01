@@ -9,7 +9,8 @@ ${NAV_LISTA}    (//ul[@class='nav-ul'])[1]
 ${BODY}    //body
 ${ELETRONICOS}   (//a[contains(text(),'Eletrônicos')])[1]
 ${TEXTO_HEADER_ELECTRONICS}    (//span[contains(text(),'Eletrônicos e Tecnologia')])[1]
-${PRODUTO_ELEC}    //div[@class='s-widget-container s-spacing-small s-widget-container-height-small celwidget slot=MAIN template=SEARCH_RESULTS widgetId=search-results_8']//a[@class='a-link-normal s-no-outline']
+${PRODUTO_ELEC}    (//a[@class='a-link-normal s-no-outline'])[7]
+${BOTAO_ADD_CAR}    //input[@id='add-to-cart-button']
 
 
 
@@ -83,27 +84,58 @@ Clicar no botão de pesquisa
 
 Verificar o resultado da pesquisa de está listando o produto "${PRODUTO}"
     Get Text    locator=(//span[normalize-space()='${PRODUTO}'])[1]
+    Capture Element Screenshot    locator=(//span[normalize-space()='${PRODUTO}'])[1]
+    
 
 
 # Caso 03
-Adicionar o produto "Xbox Series S" no carrinho
-    FOR    ${i}    IN RANGE    1    30
-        ${Produto}=    Run Keyword And Return Status    Element Should Not Be Visible    locator=${PRODUTO_ELEC}
+Adicionar o produto "${PRODUTO}" no carrinho
+    Click Element    locator=(//span[normalize-space()='${PRODUTO}'])[1]
+    ${Bota_add}=    Run Keyword And Return Status    Element Should Be Visible   locator=${BOTAO_ADD_CAR}
+        ${Text_add}=    Run Keyword And Return Status    Element Should Be Visible    locator=//span[@id='submit.add-to-cart-announce']
     
-        IF   ${Produto} 
+    FOR    ${i}    IN RANGE    1    30
+        IF    ${Bota_add} and ${Text_add}
             Log    Elemento encontrado após ${i} TABs
-            Capture Element Screenshot    locator=${PRODUTO_ELEC}
-            Click Element    locator=${PRODUTO_ELEC}
+            Capture Element Screenshot    locator=${BOTAO_ADD_CAR}
+            Click Element    locator=${BOTAO_ADD_CAR}
             BREAK
         END
-
-        Scroll Element Into View    locator=${BODY}
-        Sleep    2s        
+        Press Keys    ${BODY}    \\09
+        Sleep    2s
     END
-    # Wait Until Element Is Visible    locator=//input[@id='add-to-cart-button']
 
-# Verificar se o produto "Xbox Series S foi adicionado com sucesso
+    # ${Bota_add}=    Run Keyword And Return Status    Element Should Be Visible   locator=${BOTAO_ADD_CAR}
+    # ${Text_add}=    Run Keyword And Return Status    Element Should Be Visible    locator=//span[@id='submit.add-to-cart-announce']
 
+    # IF    ${Bota_add} and ${Text_add}
+    #     Capture Element Screenshot    locator=${BOTAO_ADD_CAR}
+    #     Click Element    locator=${BOTAO_ADD_CAR}
+    # END
+    # Sleep    2s
+
+Verificar se o produto "Xbox Series S" foi adicionado com sucesso
+    ${Text_Add}=    Run Keyword And Return Status    Element Should Be Visible    locator=(//h1[normalize-space()='Adicionado ao carrinho'])[1]
+    ${Icon_Success}    Run Keyword And Return Status    Element Should Be Visible    locator=(//i[@class='a-icon a-icon-alert'])[4]
+
+    IF    ${Text_Add} and ${Icon_Success}
+        Capture Element Screenshot    locator=(//h1[normalize-space()='Adicionado ao carrinho'])[1]
+    END
+
+
+
+# Caso 04
+Remover o produto "Xbox Series S" do carrinho
+    Wait Until Element Is Visible    locator=//button[@data-action='a-stepper-decrement']
+    Click Element    locator=//button[@data-action='a-stepper-decrement']
+    Sleep    2s
+
+Verificar se o carrinho fica vazio
+    Get Text    Xbox Series S foi removido de Carrinho de compras.
+    Sleep    2s
+    Capture Page Screenshot
+
+    
 
 # Gherkin
 
